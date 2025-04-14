@@ -12,7 +12,7 @@ A web-based Python app to retrieve stock information using Yahoo Finance API.
 ## Features
 - Enter stock symbol to get company name, price, and changes.
 - Error handling for invalid symbols and no network.
-- Deployed at [Live URL](#).
+- Deployed at [Live URL](https://stockinformation.onrender.com).
 
 ## Live Demo
 [https://stockinformation.onrender.com/](#)
