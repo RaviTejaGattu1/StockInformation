@@ -1,10 +1,9 @@
 import os
 from flask import Flask, request, render_template
-import yfinance as yf
+from alpha_vantage.timeseries import TimeSeries
 from datetime import datetime
 from dateutil import tz
 import socket
-import time
 
 app = Flask(__name__)
 
@@ -17,58 +16,48 @@ def check_internet():
         return False
 
 def get_stock_info(symbol):
-    """Retrieve stock information for the given symbol with retry logic."""
+    """Retrieve stock information using Alpha Vantage."""
     try:
         # Check internet connectivity
         if not check_internet():
             return None, "Error: No internet connection."
 
-        # Fetch stock data with retries
-        for attempt in range(3):  # Retry up to 3 times
-            try:
-                stock = yf.Ticker(symbol)
-                info = stock.info
+        # Initialize Alpha Vantage
+        api_key = "V3JRGD8MJ6KSIA64"  # Replace with your Alpha Vantage API key
+        ts = TimeSeries(key=api_key, output_format="json")
 
-                # Check if valid symbol
-                if not info.get("shortName") or info.get("shortName") == "":
-                    return None, f"Error: Invalid symbol '{symbol}'."
+        # Get quote data
+        data, meta = ts.get_quote_endpoint(symbol)
 
-                # Get current date and time (PDT)
-                utc_time = datetime.now(tz.tzutc())
-                pdt_time = utc_time.astimezone(tz.gettz("America/Los_Angeles"))
-                formatted_time = pdt_time.strftime("%a %b %d %H:%M:%S PDT %Y")
+        # Check if valid symbol
+        if not data:
+            return None, f"Error: Invalid symbol '{symbol}'."
 
-                # Get stock details
-                company_name = info.get("shortName", "N/A")
-                current_price = info.get("regularMarketPrice", 0.0)
-                previous_close = info.get("regularMarketPreviousClose", 0.0)
+        # Get current date and time (PDT)
+        utc_time = datetime.now(tz.tzutc())
+        pdt_time = utc_time.astimezone(tz.gettz("America/Los_Angeles"))
+        formatted_time = pdt_time.strftime("%a %b %d %H:%M:%S PDT %Y")
 
-                # Calculate value and percentage change
-                value_change = current_price - previous_close
-                percentage_change = (value_change / previous_close) * 100 if previous_close != 0 else 0
+        # Get stock details
+        company_name = symbol  # Alpha Vantage quote doesn't provide full name
+        current_price = float(data["05. price"])
+        previous_close = float(data["08. previous close"])
+        value_change = current_price - previous_close
+        percentage_change = (value_change / previous_close) * 100 if previous_close != 0 else 0
 
-                # Format changes with + or - signs
-                value_change_str = f"+{value_change:.2f}" if value_change >= 0 else f"{value_change:.2f}"
-                percentage_change_str = f"+{percentage_change:.2f}" if percentage_change >= 0 else f"{percentage_change:.2f}"
+        # Format changes
+        value_change_str = f"+{value_change:.2f}" if value_change >= 0 else f"{value_change:.2f}"
+        percentage_change_str = f"+{percentage_change:.2f}" if percentage_change >= 0 else f"{percentage_change:.2f}"
 
-                # Prepare result
-                result = {
-                    "date_time": formatted_time,
-                    "company": f"{company_name} ({symbol.upper()})",
-                    "price": f"{current_price:.2f}",
-                    "value_change": value_change_str,
-                    "percentage_change": f"({percentage_change_str}%)"
-                }
-                return result, None
-
-            except Exception as e:
-                if "401" in str(e) or "Too Many Requests" in str(e):
-                    if attempt < 2:
-                        time.sleep(2)  # Wait before retrying
-                        continue
-                return None, f"Error: Unable to fetch data for '{symbol}'. Try again later."
-
-        return None, f"Error: Unable to fetch data for '{symbol}' after multiple attempts."
+        # Prepare result
+        result = {
+            "date_time": formatted_time,
+            "company": f"{company_name} ({symbol.upper()})",
+            "price": f"{current_price:.2f}",
+            "value_change": value_change_str,
+            "percentage_change": f"({percentage_change_str}%)"
+        }
+        return result, None
 
     except Exception as e:
         return None, f"Error: Unable to fetch data for '{symbol}'. Details: {str(e)}"
