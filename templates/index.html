@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Info</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Stock Information Lookup</h1>
+    <form method="POST" action="/">
+        <label>Please enter a symbol:</label><br>
+        <input type="text" name="symbol" required><br><br>
+        <input type="submit" value="Get Stock Info">
+    </form>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+</body>
+</html>

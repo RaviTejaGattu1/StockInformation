@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Info Result</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        a { text-decoration: none; color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Stock Information</h1>
+    <p>{{ result.date_time }}</p>
+    <p>{{ result.company }}</p>
+    <p>{{ result.price }} {{ result.value_change }} {{ result.percentage_change }}</p>
+    <a href="/">Check another symbol</a>
+</body>
+</html>
