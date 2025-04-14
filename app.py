@@ -1,8 +1,10 @@
+import os
 from flask import Flask, request, render_template
 import yfinance as yf
 from datetime import datetime
 from dateutil import tz
 import socket
+
 
 app = Flask(__name__)
 
@@ -70,5 +72,8 @@ def index():
         return render_template("result.html", result=result)
     return render_template("index.html")
 
+# if __name__ == "__main__":
+#     app.run(debug=True)
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
