@@ -4,7 +4,7 @@ import yfinance as yf
 from datetime import datetime
 from dateutil import tz
 import socket
-
+import time
 
 app = Flask(__name__)
 
@@ -17,47 +17,58 @@ def check_internet():
         return False
 
 def get_stock_info(symbol):
-    """Retrieve stock information for the given symbol."""
+    """Retrieve stock information for the given symbol with retry logic."""
     try:
         # Check internet connectivity
         if not check_internet():
             return None, "Error: No internet connection."
 
-        # Fetch stock data
-        stock = yf.Ticker(symbol)
-        info = stock.info
+        # Fetch stock data with retries
+        for attempt in range(3):  # Retry up to 3 times
+            try:
+                stock = yf.Ticker(symbol)
+                info = stock.info
 
-        # Check if valid symbol
-        if not info.get("shortName"):
-            return None, f"Error: Invalid symbol '{symbol}'."
+                # Check if valid symbol
+                if not info.get("shortName") or info.get("shortName") == "":
+                    return None, f"Error: Invalid symbol '{symbol}'."
 
-        # Get current date and time (PDT)
-        utc_time = datetime.now(tz.tzutc())
-        pdt_time = utc_time.astimezone(tz.gettz("America/Los_Angeles"))
-        formatted_time = pdt_time.strftime("%a %b %d %H:%M:%S PDT %Y")
+                # Get current date and time (PDT)
+                utc_time = datetime.now(tz.tzutc())
+                pdt_time = utc_time.astimezone(tz.gettz("America/Los_Angeles"))
+                formatted_time = pdt_time.strftime("%a %b %d %H:%M:%S PDT %Y")
 
-        # Get stock details
-        company_name = info.get("shortName", "N/A")
-        current_price = info.get("regularMarketPrice", 0.0)
-        previous_close = info.get("regularMarketPreviousClose", 0.0)
-        
-        # Calculate value and percentage change
-        value_change = current_price - previous_close
-        percentage_change = (value_change / previous_close) * 100 if previous_close != 0 else 0
+                # Get stock details
+                company_name = info.get("shortName", "N/A")
+                current_price = info.get("regularMarketPrice", 0.0)
+                previous_close = info.get("regularMarketPreviousClose", 0.0)
 
-        # Format changes with + or - signs
-        value_change_str = f"+{value_change:.2f}" if value_change >= 0 else f"{value_change:.2f}"
-        percentage_change_str = f"+{percentage_change:.2f}" if percentage_change >= 0 else f"{percentage_change:.2f}"
+                # Calculate value and percentage change
+                value_change = current_price - previous_close
+                percentage_change = (value_change / previous_close) * 100 if previous_close != 0 else 0
 
-        # Prepare result
-        result = {
-            "date_time": formatted_time,
-            "company": f"{company_name} ({symbol.upper()})",
-            "price": f"{current_price:.2f}",
-            "value_change": value_change_str,
-            "percentage_change": f"({percentage_change_str}%)"
-        }
-        return result, None
+                # Format changes with + or - signs
+                value_change_str = f"+{value_change:.2f}" if value_change >= 0 else f"{value_change:.2f}"
+                percentage_change_str = f"+{percentage_change:.2f}" if percentage_change >= 0 else f"{percentage_change:.2f}"
+
+                # Prepare result
+                result = {
+                    "date_time": formatted_time,
+                    "company": f"{company_name} ({symbol.upper()})",
+                    "price": f"{current_price:.2f}",
+                    "value_change": value_change_str,
+                    "percentage_change": f"({percentage_change_str}%)"
+                }
+                return result, None
+
+            except Exception as e:
+                if "401" in str(e) or "Too Many Requests" in str(e):
+                    if attempt < 2:
+                        time.sleep(2)  # Wait before retrying
+                        continue
+                return None, f"Error: Unable to fetch data for '{symbol}'. Try again later."
+
+        return None, f"Error: Unable to fetch data for '{symbol}' after multiple attempts."
 
     except Exception as e:
         return None, f"Error: Unable to fetch data for '{symbol}'. Details: {str(e)}"
@@ -71,9 +82,6 @@ def index():
             return render_template("index.html", error=error)
         return render_template("result.html", result=result)
     return render_template("index.html")
-
-# if __name__ == "__main__":
-#     app.run(debug=True)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
