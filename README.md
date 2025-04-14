@@ -1,65 +1,118 @@
-Python Finance Info
-A web-based Python application to retrieve stock information using the Alpha Vantage API. Deployed for the SEP-285 course at SJSU, Spring 2025.
+# 📈 Python Finance Info
 
-Live Demo
-https://stockinformation.onrender.com
+A sleek, web-based Python application for retrieving real-time stock information using the **Alpha Vantage API**.  
 
-Features
-Accepts a stock symbol (e.g., ADBE, NVDA) as input via a web form.
-Displays:
-Current date and time in PDT (e.g., Mon Apr 14 20:00:00 PDT 2025).
-Company name and symbol (e.g., NVDA (NVDA)).
-Current stock price, value change, and percentage change (e.g., 123.45 +1.23 (+1.00%)).
-Handles errors gracefully:
-Invalid symbols (e.g., INVALID).
-No internet connection.
-API failures.
-Deployed on Render for public access.
-Setup (Local Development)
-Clone the repository:
-bash
+🔗 **Live Demo:** [https://stockinformation.onrender.com](https://stockinformation.onrender.com)
 
-Copy
+---
+
+## 🚀 Features
+
+- 🔎 Accepts a stock symbol (e.g., `ADBE`, `NVDA`) via a web form.
+- 📅 Displays:
+  - Current date and time in **PDT** (e.g., `Mon Apr 14 20:00:00 PDT 2025`)
+  - Company name and symbol (e.g., `NVIDIA Corp (NVDA)`)
+  - Stock price, value change, and percentage change (e.g., `552.75 +2.45 (+0.45%)`)
+- 🛠️ Error handling for:
+  - Invalid stock symbols (e.g., `INVALID`)
+  - No internet connection
+  - API service issues or failures
+- 🌐 Publicly accessible via **Render**
+
+---
+
+## ⚙️ Setup (Local Development)
+
+### 1. Clone the Repository
+
+```bash
 git clone https://github.com/your-username/Python-Finance-Info.git
 cd Python-Finance-Info
-Create a virtual environment:
-bash
+```
 
-Copy
+### 2. Create and Activate a Virtual Environment
+
+```bash
 python3 -m venv venv
 source venv/bin/activate
-Install dependencies:
-bash
+```
 
-Copy
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
-Set up Alpha Vantage API key:
-Get a free API key from alphavantage.co.
-Replace YOUR_API_KEY in app.py with your key.
-Run the app:
-bash
+```
 
-Copy
+### 4. Configure API Key
+
+- Sign up at [Alpha Vantage](https://www.alphavantage.co) to get a free API key.
+- Open `app.py` and replace `YOUR_API_KEY` with your actual key.
+
+### 5. Run the Application
+
+```bash
 python3 app.py
-Access locally:
-Open http://127.0.0.1:5000 in a browser.
-Deployment
-Deployed on Render using gunicorn as the WSGI server.
-Configuration:
-Build command: pip install -r requirements.txt
-Start command: gunicorn app:app
-Live URL: https://stockinformation.onrender.com
-Notes
-Initially used yfinance (Yahoo Finance API), but switched to Alpha Vantage due to persistent 401 Unauthorized errors caused by Yahoo's rate limits in deployed environments.
-Alpha Vantage’s free tier has a limit of 5 requests/minute. For production, consider a premium key or rate limit handling.
-The app meets all project requirements: stock data retrieval, error handling, and web accessibility.
-Example Output
-Input: ADBE
-Output:
+```
+
+### 6. Access Locally
+
+Open your browser and navigate to:  
+[http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+---
+
+## ☁️ Deployment
+
+- Hosted on **Render** using **Gunicorn** as the WSGI server.
+
+### Render Configuration:
+
+- **Build Command:**  
+  ```bash
+  pip install -r requirements.txt
+  ```
+
+- **Start Command:**  
+  ```bash
+  gunicorn app:app
+  ```
+
+- **Live URL:**  
+  [https://stockinformation.onrender.com](https://stockinformation.onrender.com)
+
+---
+
+## 💡 Notes
+
+- Originally used the `yfinance` API (Yahoo Finance), but encountered persistent `401 Unauthorized` errors in deployment due to rate limits. Switched to **Alpha Vantage**.
+- Alpha Vantage’s free tier allows **5 requests per minute**. Consider upgrading or implementing rate limiting for production use.
+- Fully meets all SEP-285 project criteria:
+  - ✅ Real-time stock data retrieval  
+  - ✅ Robust error handling  
+  - ✅ Web accessibility
+
+---
+
+## 📦 Example Output
+
+**Input:** `ADBE`  
+**Output:**
+
+```
 Mon Apr 14 20:00:00 PDT 2025
 ADBE (ADBE)
 552.75 +2.45 (+0.45%)
-Requirements
-Python 3.8+
-Libraries: flask, alpha-vantage, python-dateutil, gunicorn
-See requirements.txt for full list
+```
+
+---
+
+## 📚 Requirements
+
+- **Python** 3.8+
+- Key Libraries:
+  - `flask`
+  - `alpha-vantage`
+  - `python-dateutil`
+  - `gunicorn`
+
+See `requirements.txt` for the complete list.
